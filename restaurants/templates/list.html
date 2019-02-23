@@ -21,8 +21,14 @@
           {% endif %}
           <div class="card-body">
             <h5 class="card-title">{{restaurant.name}}</h5>
-            <p class="card-text">{{restaurant.description|truncatechars:25}}</p>
+            <p class="card-text">{{restaurant.description|truncatechars:25}}
+            <div class="float-right">
+              <button id ="{{restaurant.id}}" class="btn btn-light {% if restaurant.id in favorite_restaurents %} text-danger {% endif %}" type="submit" onClick="fav({{restaurant.id}})"  ><i class="fas fa-star"></i></button>
+
+            </div>
+            </p>
           </div>
+
           <ul class="list-group list-group-flush">
             <li class="list-group-item text-center">
                 <a href="{% url 'restaurant-detail' restaurant.id %}" class="btn btn-outline-dark">View</a>
@@ -32,5 +38,29 @@
     </div>
     {% endfor %}
 </div>
+<script>
+  function fav(id){
+    let button_id="#"+id
+    $.ajax({
+      type:"GET",
+      url: '/restaurants/'+id+'/favorite/',
+      success: function(data){
+        
+        if(data.fav){
+          $(button_id).addClass("text-danger");
+        }
+        else{
+          $(button_id).removeClass("text-danger");
+        }
+
+    },
+
+    error: function(){
+      console.log("error")
+    },
+    });
+    
+  }
+</script>
 {% endblock content %}
 

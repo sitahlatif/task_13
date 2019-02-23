@@ -1,13 +1,25 @@
 from django.shortcuts import render, redirect
-from .models import Restaurant, Item
+from .models import Restaurant, Item , FavoriteRestaurant
 from .forms import RestaurantForm, ItemForm, SignupForm, SigninForm
 from django.contrib.auth import login, authenticate, logout
 from django.db.models import Q
+from django.http import JsonResponse
 
 # This view will be used to favorite a restaurant
 def restaurant_favorite(request, restaurant_id):
-    
-    return
+    if request.user.is_anonymous:
+        return redirect('signin')
+    restaurant= Restaurant.objects.get(id=restaurant_id)
+    fav_obj , created = FavoriteRestaurant.objects.get_or_create(user=request.user, restaurant=restaurant)
+    if created:
+        fav =True 
+    else:
+        fav=False
+        fav_obj.delete()
+    data ={
+      "fav":fav,
+    }
+    return JsonResponse(data, safe= False)
 
 
 # This view will be used to display only restaurants a user has favorited
@@ -72,8 +84,10 @@ def restaurant_list(request):
             Q(owner__username__icontains=query)
         ).distinct()
         #############
+    favorite_restaurents = FavoriteRestaurant.objects.filter(user=request.user).values_list('restaurant_id', flat=True)
     context = {
-       "restaurants": restaurants
+       "restaurants": restaurants,
+       "favorite_restaurents":favorite_restaurents,
     }
     return render(request, 'list.html', context)
 
